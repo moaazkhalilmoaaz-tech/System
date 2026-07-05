@@ -1,0 +1,130 @@
+doctype html
+html(lang="en")
+  head
+    meta(charset="UTF-8")
+    meta(name="viewport" content="width=device-width, initial-scale=1.0")
+    title Select Server
+    link(href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap", rel="stylesheet")
+    style.
+      * { box-sizing: border-box; font-family: 'Inter', sans-serif; }
+      body { margin: 0; background-color: #09090b; color: #fafafa; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
+      
+      .container { width: 100%; max-width: 1000px; padding: 40px 20px; }
+      
+      header { text-align: center; margin-bottom: 40px; }
+      h1 { font-size: 32px; font-weight: 700; margin: 0 0 10px 0; }
+      p.subtitle { color: #a1a1aa; font-size: 16px; margin: 0; }
+
+      .search-wrapper { margin: 0 auto 30px auto; max-width: 400px; position: relative; }
+      .search-input { width: 100%; background: #18181b; border: 1px solid #27272a; padding: 12px 16px 12px 40px; border-radius: 8px; color: #fff; font-size: 14px; transition: all 0.2s; }
+      .search-input:focus { outline: none; border-color: #fafafa; }
+      .search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #71717a; }
+
+      .guild-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 20px; }
+
+      .guild-card { background: #18181b; border: 1px solid #27272a; border-radius: 12px; padding: 24px; display: flex; flex-direction: column; align-items: center; text-align: center; transition: transform 0.2s, border-color 0.2s; }
+      .guild-card:hover { transform: translateY(-4px); border-color: #52525b; }
+      
+      .guild-icon { width: 80px; height: 80px; border-radius: 50%; background-color: #27272a; margin-bottom: 16px; object-fit: cover; border: 2px solid #27272a; }
+      .guild-icon.no-img { display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 600; color: #a1a1aa; }
+      
+      .guild-name { font-size: 16px; font-weight: 600; margin: 0 0 4px 0; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+      .guild-desc { font-size: 12px; color: #71717a; margin-bottom: 20px; }
+
+      .btn-manage { background: #fafafa; color: #09090b; text-decoration: none; padding: 10px 24px; border-radius: 6px; font-weight: 600; font-size: 14px; width: 100%; transition: opacity 0.2s; }
+      .btn-manage:hover { opacity: 0.9; }
+
+      .loading { text-align: center; color: #a1a1aa; margin-top: 40px; }
+
+  body
+    div.container
+      header
+        h1 Select a Server
+        p.subtitle Choose a server to configure bot settings
+
+      div.search-wrapper
+        svg.search-icon(width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2")
+            circle(cx="11" cy="11" r="8")
+            line(x1="21" y1="21" x2="16.65" y2="16.65")
+        input#searchInput.search-input(type="text" placeholder="Search servers..." onkeyup="filterGuilds()")
+
+      div#guildGrid.guild-grid
+        div.loading Loading servers...
+
+    script.
+      if ((performance.getEntriesByType && performance.getEntriesByType("navigation")[0] && performance.getEntriesByType("navigation")[0].type === "reload") || (performance.navigation && performance.navigation.type === 1)) {
+          window.location.href = '/logout';
+      }
+      const API_GET_GUILDS = '/api/guilds'; 
+      
+      const DASHBOARD_URL = '/dashboard'; 
+
+      document.addEventListener('DOMContentLoaded', loadGuilds);
+
+      let allGuilds = [];
+
+      async function loadGuilds() {
+        const grid = document.getElementById('guildGrid');
+        
+        try {
+            const res = await fetch(API_GET_GUILDS, { credentials: 'same-origin' });
+            if (res.redirected || !res.ok) {
+                if (res.status === 401 || res.status === 403 || res.redirected) {
+                    window.location.href = '/';
+                    return;
+                }
+                throw new Error(`HTTP error! status: ${res.status}`);
+            }
+            const contentType = res.headers.get("content-type");
+            if (!contentType || !contentType.includes("application/json")) {
+                throw new Error("Oops, we haven't got JSON!");
+            }
+            allGuilds = await res.json();
+
+            if (!Array.isArray(allGuilds)) {
+                 allGuilds = [];
+            }
+            renderGuilds(allGuilds);
+        } catch (error) {
+            console.error(error);
+            grid.innerHTML = `<p style="color: #f87171; text-align: center;">Failed to load servers. Error: ${error.message || error}</p>`;
+        }
+      }
+
+      function renderGuilds(guilds) {
+        const grid = document.getElementById('guildGrid');
+        grid.innerHTML = '';
+
+        if (guilds.length === 0) {
+            grid.innerHTML = '<p style="color: #52525b; grid-column: 1/-1; text-align: center;">No servers found.</p>';
+            return;
+        }
+
+        guilds.forEach(guild => {
+            let iconHtml = '';
+            if (guild.icon) {
+                iconHtml = `<img src="${guild.icon}" class="guild-icon" alt="${guild.name}">`;
+            } else {
+                const initials = guild.name.substring(0, 2).toUpperCase();
+                iconHtml = `<div class="guild-icon no-img">${initials}</div>`;
+            }
+
+            const manageUrl = `${DASHBOARD_URL}/guild/${guild.id}`;
+
+            const card = document.createElement('div');
+            card.className = 'guild-card';
+            card.innerHTML = `
+                ${iconHtml}
+                <h3 class="guild-name">${guild.name}</h3>
+                <p class="guild-desc">ID: ${guild.id}</p>
+                <a href="${manageUrl}" class="btn-manage">Manage</a>
+            `;
+            grid.appendChild(card);
+        });
+      }
+
+      function filterGuilds() {
+        const term = document.getElementById('searchInput').value.toLowerCase();
+        const filtered = allGuilds.filter(g => g.name.toLowerCase().includes(term) || g.id.includes(term));
+        renderGuilds(filtered);
+      }

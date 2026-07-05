@@ -1,0 +1,26 @@
+declare const COMMAND_PERMISSIONS: {
+    ban: string;
+    clear: string;
+    come: string;
+    embed: string;
+    hide: string;
+    kick: string;
+    lock: string;
+    move: string;
+    mute: string;
+    nickname: string;
+    role: string;
+    say: string;
+    send: string;
+    show: string;
+    timeout: string;
+    unban: string;
+    unlock: string;
+    unmute: string;
+    untimeout: string;
+    points: string;
+    warn: string;
+    warn_remove: string;
+    warnings: string;
+};
+export default COMMAND_PERMISSIONS;

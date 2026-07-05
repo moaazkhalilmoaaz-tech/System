@@ -1,0 +1,17 @@
+div#tab-general.tab-section.active
+  h1 General Settings
+  p.desc Basic configurations for prefix and embed style.
+
+  div.section-card
+    div.section-header
+      div.section-title
+        h3 Core Config
+    div.grid-2
+      div.form-group
+          label Bot Prefix
+          input#gen_prefix(type="text" placeholder="!" )
+      div.form-group
+          label Embed Color
+          div(style="display:flex; gap:10px;")
+              input#gen_color_picker(type="color" style="width:50px; padding:0; height:38px;")
+              input#gen_color(type="text" placeholder="#ffffff")

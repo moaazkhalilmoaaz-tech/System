@@ -1,0 +1,786 @@
+doctype html
+html(lang="en")
+  head
+    meta(charset="UTF-8")
+    meta(name="viewport" content="width=device-width, initial-scale=1.0")
+    title Dashboard
+    link(href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap", rel="stylesheet")
+    style.
+      :root {
+        --bg-body: #09090b;
+        --bg-card: #18181b;
+        --bg-input: #09090b;
+        --border: #27272a;
+        --primary: #5865F2;
+        --text-main: #fafafa;
+        --text-muted: #a1a1aa;
+        --danger: #ef4444;
+        --success: #4ade80;
+        --active-emb: #60a5fa;
+        --active-cond: #facc15;
+      }
+      * { box-sizing: border-box; font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased; }
+      body { margin: 0; background-color: var(--bg-body); color: var(--text-main); display: flex; height: 100vh; overflow: hidden; }
+      
+      .sidebar { width: 260px; background: var(--bg-card); border-right: 1px solid var(--border); display: flex; flex-direction: column; height: 100vh; position: fixed; left: 0; top: 0; transition: transform 0.3s ease; z-index: 1000; padding: 20px; }
+      .sidebar.closed { transform: translateX(-100%); }
+      .sidebar-header { margin-bottom: 30px; display: flex; align-items: center; justify-content: space-between; }
+      .sidebar-header h2 { margin: 0; font-size: 18px; font-weight: 600; color: #fff; }
+      .btn-close-sidebar { background: none; border: none; color: var(--text-muted); cursor: pointer; display: none; }
+      
+      .nav-links { display: flex; flex-direction: column; gap: 8px; }
+      .nav-item { padding: 10px 14px; border-radius: 6px; color: var(--text-muted); cursor: pointer; font-size: 14px; font-weight: 500; transition: 0.2s; display: flex; align-items: center; gap: 10px; }
+      .nav-item:hover { background: var(--border); color: #fff; }
+      .nav-item.active { background: var(--border); color: #fff; font-weight: 600; border-left: 3px solid #fff; }
+
+      .main-content { flex: 1; margin-left: 260px; height: 100vh; overflow-y: auto; transition: margin-left 0.3s ease; display: flex; flex-direction: column; align-items: center; padding-bottom: 40px; }
+      .main-content.expanded { margin-left: 0; }
+      
+      .top-bar { width: 100%; padding: 16px 40px; display: flex; align-items: center; position: sticky; top: 0; background: var(--bg-body); z-index: 90; }
+      .btn-toggle-menu { background: var(--bg-card); border: 1px solid var(--border); color: #fff; padding: 8px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+
+      .content-wrapper { width: 100%; max-width: 800px; padding: 0 20px 100px 20px; }
+      
+      h1 { font-size: 24px; margin: 0 0 8px 0; font-weight: 600; }
+      p.desc { color: var(--text-muted); font-size: 14px; margin: 0 0 32px 0; }
+      
+      .section-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin-bottom: 24px; }
+      .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid var(--border); }
+      .section-title h3 { margin: 0; font-size: 16px; font-weight: 600; }
+      .section-title p { margin: 4px 0 0 0; color: var(--text-muted); font-size: 13px; }
+      
+      .form-group { margin-bottom: 20px; }
+      label { display: block; font-size: 13px; font-weight: 500; color: #e4e4e7; margin-bottom: 8px; }
+      input[type="text"], input[type="number"], input[type="color"], textarea, select { width: 100%; padding: 10px 12px; border-radius: 8px; background: var(--bg-input); border: 1px solid var(--border); color: #fff; font-size: 14px; transition: all 0.2s; }
+      input:focus, textarea:focus, select:focus { outline: none; border-color: #fafafa; }
+      textarea { resize: vertical; min-height: 80px; } 
+      .helper-text { font-size: 12px; color: #52525b; margin-top: 6px; }
+      
+      .switch { position: relative; display: inline-block; width: 36px; height: 20px; flex-shrink: 0; }
+      .switch input { opacity: 0; width: 0; height: 0; }
+      .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--border); transition: .4s; border-radius: 34px; }
+      .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 2px; bottom: 2px; background-color: var(--text-muted); transition: .4s; border-radius: 50%; }
+      input:checked + .slider { background-color: #fafafa; }
+      input:checked + .slider:before { transform: translateX(16px); background-color: var(--bg-body); }
+      
+      .list-container { display: flex; flex-direction: column; gap: 16px; margin-bottom: 16px; }
+      .reply-wrapper, .economy-role-item { background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; padding: 16px; animation: fadeIn 0.3s ease; }
+      
+      .reply-main-row { display: grid; grid-template-columns: 1fr 2fr auto; gap: 12px; align-items: start; }
+      .reply-actions { display: flex; flex-direction: row; gap: 8px; padding-top: 29px; justify-content: flex-end; }
+      
+      .economy-role-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 40px; gap: 12px; align-items: center; }
+      .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+      .btn-add { background: transparent; border: 1px dashed var(--border); color: var(--text-muted); width: 100%; padding: 12px; border-radius: 8px; cursor: pointer; font-size: 13px; display: flex; align-items: center; justify-content: center; gap: 8px; }
+      .btn-add:hover { border-color: #52525b; color: #fff; background: var(--bg-card); }
+      
+      .btn-icon { background: transparent; border: 1px solid #3f3f46; color: #71717a; cursor: pointer; padding: 8px; border-radius: 6px; display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; transition: all 0.2s; }
+      .btn-icon:hover { border-color: #71717a; color: #fff; }
+      .btn-delete:hover { color: var(--danger); border-color: var(--danger); background: rgba(239, 68, 68, 0.1); }
+
+      .config-section { display: none; margin-top: 12px; padding: 16px; border: 1px dashed var(--border); border-radius: 8px; background: rgba(0,0,0,0.2); }
+      .config-section.show { display: block; animation: fadeIn 0.2s ease; }
+
+      .action-bar { position: sticky; bottom: 20px; margin-top: 40px; background: rgba(9, 9, 11, 0.8); backdrop-filter: blur(10px); border: 1px solid var(--border); padding: 16px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; z-index: 100; }
+      .btn-group { display: flex; gap: 12px; }
+      .btn-primary { background: #fafafa; color: var(--bg-body); border: none; padding: 10px 24px; border-radius: 6px; font-weight: 500; font-size: 14px; cursor: pointer; }
+      .btn-reset { background: transparent; color: var(--danger); border: 1px solid #3f3f46; padding: 10px 24px; border-radius: 6px; cursor: pointer; }
+
+      .status-msg { font-size: 14px; font-weight: 500; display: none; }
+      .status-msg.success { color: var(--success); display: block; }
+      .status-msg.error { color: var(--danger); display: block; }
+      .status-msg.loading { color: var(--text-muted); display: block; }
+
+      .tab-section { display: none; }
+      .tab-section.active { display: block; animation: fadeIn 0.3s; }
+      
+      .checkbox-label { display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 13px; color: var(--text-muted); }
+      .checkbox-label input { width: auto; }
+
+      .command-list { display: flex; flex-direction: column; gap: 12px; }
+      .command-wrapper { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; transition: all 0.2s; }
+      .command-header { padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; background: var(--bg-card); }
+      .command-details { padding: 20px 24px; border-top: 1px solid var(--border); background: #121214; display: none; }
+      .command-details.open { display: block; animation: fadeIn 0.2s; }
+      
+      .cmd-info h4 { margin: 0 0 6px 0; font-size: 15px; font-weight: 600; color: #fff; }
+      .cmd-info p { margin: 0; font-size: 13px; color: var(--text-muted); }
+      .cmd-controls { display: flex; align-items: center; gap: 16px; }
+      .btn-edit-cmd { background: var(--border); border: none; color: #e4e4e7; padding: 6px 16px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+      .btn-edit-cmd:hover { background: #3f3f46; color: #fff; }
+      .cmd-grid-config { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px; }
+      
+      .cmd-punish-config { margin-top: 24px; padding-top: 24px; border-top: 1px dashed var(--border); }
+      .hidden { display: none !important; }
+      .reason-add-row { display: grid; grid-template-columns: 40px 1fr 80px 100px 40px; gap: 10px; align-items: center; }
+      .reason-add-row span { font-size: 13px; color: var(--text-muted); font-weight: 500; }
+      .reasons-display-list { margin-top: 12px; display: flex; flex-direction: column; gap: 8px; }
+      .reason-item { display: grid; grid-template-columns: 1fr 80px 100px 40px; gap: 10px; align-items: center; background: rgba(255,255,255,0.03); padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border); }
+      .reason-item span { font-size: 13px; }
+      
+      @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+      @media (max-width: 768px) {
+        .sidebar { transform: translateX(-100%); }
+        .sidebar.open { transform: translateX(0); }
+        .main-content { margin-left: 0; padding: 0 16px; }
+        .btn-close-sidebar { display: block; }
+        .reply-main-row, .economy-role-grid, .grid-2, .cmd-grid-config, .reason-add-row, .reason-item { grid-template-columns: 1fr; gap: 12px; }
+        .action-bar { flex-direction: column; gap: 16px; align-items: stretch; }
+      }
+
+  body
+    aside#sidebar.sidebar
+      div.sidebar-header
+        h2 Dashboard
+        button.btn-close-sidebar(onclick="toggleSidebar()") ✕
+      nav.nav-links
+        div.nav-item.active(onclick="switchTab('general', this)") General
+        div.nav-item(onclick="switchTab('coins', this)") Coins
+        div.nav-item(onclick="switchTab('auto', this)") Automation
+        div.nav-item(onclick="switchTab('leveling', this)") Leveling
+        div.nav-item(onclick="switchTab('commands', this)") Commands
+
+    main#mainContent.main-content
+      div.top-bar
+        button.btn-toggle-menu(onclick="toggleSidebar()")
+          svg(width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2")
+            line(x1="3" y1="12" x2="21" y2="12")
+            line(x1="3" y1="6" x2="21" y2="6")
+            line(x1="3" y1="18" x2="21" y2="18")
+
+      div.content-wrapper
+        form#settingsForm(onsubmit="return false")
+          
+          div#tab-general.tab-section.active
+            h1 General Settings
+            p.desc Basic configurations.
+            div.section-card
+              div.section-header
+                div.section-title: h3 Core Config
+              div.grid-2
+                div.form-group
+                    label Bot Prefix
+                    input#gen_prefix(type="text")
+                div.form-group
+                    label Embed Color
+                    div(style="display:flex; gap:10px;")
+                        input#gen_color_picker(type="color" style="width:50px; padding:0; height:38px;")
+                        input#gen_color(type="text")
+
+          div#tab-coins.tab-section
+            h1 CoinsSettings
+            p.desc Manage currency permissions.
+            div.section-card
+              div.section-header
+                div.section-title: h3 CoinsAccess
+              div.form-group
+                label Owners IDs
+                input#gen_owners(type="text")
+              div.form-group
+                label Blacklisted Role ID
+                input#gen_blacklist(type="text")
+              div.form-group
+                label Allowed Channels IDs
+                input#gen_channels(type="text")
+
+            div.section-card
+                div.section-header
+                    div.section-title: h3 Tax Configuration
+                div.grid-2
+                    div.form-group
+                        label Tax Percentage (%)
+                        input#tax_percentage(type="number")
+                    div.form-group
+                        label Fixed Tax Amount
+                        input#tax_fixed(type="number")
+                div.form-group
+                    label Tax Receiver ID
+                    input#tax_receiver(type="text")
+
+            div.section-card
+                div.section-header
+                    div.section-title: h3 Allowed Roles
+                div#economy-roles-list.list-container
+                button.btn-add(type="button" onclick="addEconomyRoleRow()") + Add Allowed Role
+
+          div#tab-auto.tab-section
+            h1 Automation
+            p.desc Manage automatic responses.
+            div.section-card
+              div.section-header
+                div.section-title: h3 Auto Line
+                label.switch
+                  input#autoline_enabled(type="checkbox") 
+                  span.slider
+              div.form-group
+                label Image URL
+                input#autoline_image(type="text")
+              div.form-group
+                label Channels
+                input#autoline_channels(type="text")
+
+            div.section-card
+              div.section-header
+                div.section-title: h3 Auto Reply
+                label.switch
+                  input#autoreply_enabled(type="checkbox") 
+                  span.slider
+              div#reply-list.list-container
+              button.btn-add(type="button" onclick="addReplyRow()") Add New Reply
+
+            div.section-card
+              div.section-header
+                div.section-title: h3 Auto React
+                label.switch
+                  input#autoreact_enabled(type="checkbox") 
+                  span.slider
+              div#react-list.list-container
+              button.btn-add(type="button" onclick="addReactRow()") Add Channel Config
+
+          div#tab-leveling.tab-section
+            h1 Leveling System
+            p.desc Configure level up announcements.
+            div.section-card
+              div.section-header
+                div.section-title: h3 Level Up Messages
+                label.switch
+                  input#leveling_enabled(type="checkbox") 
+                  span.slider
+              div.form-group
+                label Level Up Channel ID
+                input#leveling_channel(type="text" placeholder="ID of the channel to send level up images")
+                p.helper-text Leave empty to reply in the same channel (only for text chat).
+              div.form-group
+                label Daily Stats Channel ID
+                input#leveling_stats_channel(type="text" placeholder="ID of the channel to send daily top stats")
+                p.helper-text Sent 10 minutes before reset (at 2:50 AM).
+
+          div#tab-commands.tab-section
+            h1 Commands
+            p.desc Configure commands behavior.
+            
+            -
+              const commands = [
+                { name: '/ban', desc: 'Bans a member.', active: true },
+                { name: '/kick', desc: 'Kicks a member.', active: true },
+                { name: '/mute text', desc: 'Mutes a member.', active: true },
+                { name: '/mute voice', desc: 'Mutes a member.', active: true },
+                { name: '/timeout', desc: 'Timeouts a member.', active: true },
+                { name: '/warn', desc: 'Warns a member.', active: true },
+                { name: '/warn_remove', desc: 'Warns a member.', active: true },
+                { name: '/warnings', desc: 'Warns a member.', active: true },
+                { name: '/unban', desc: 'Revokes a ban.', active: true },
+                { name: '/unmute text', desc: 'Removes mute.', active: true },
+                { name: '/unmute voice', desc: 'Removes mute.', active: true },
+                { name: '/clear', desc: 'Deletes messages.', active: true },
+                { name: '/lock', desc: 'Locks channel.', active: true },
+                { name: '/unlock', desc: 'Unlocks channel.', active: true },
+                { name: '/hide', desc: 'Hides channel.', active: true },
+                { name: '/show', desc: 'Unhides channel.', active: true },
+                { name: '/role give', desc: 'Manage roles.', active: true },
+                { name: '/role remove', desc: 'Manage roles.', active: true },
+                { name: '/role roles', desc: 'Manage roles.', active: true },
+                { name: '/nickname', desc: 'Change nickname.', active: true },
+                { name: '/say', desc: 'Bot repeats message.', active: true },
+                { name: '/embed', desc: 'Send embed.', active: true },
+                { name: '/send', desc: 'Send DM.', active: true },
+                { name: '/come', desc: 'Summon member.', active: true },
+                { name: '/move', desc: 'Move member.', active: true },
+                { name: '/user', desc: 'User info.', active: true },
+                { name: '/avatar', desc: 'User avatar.', active: true },
+                { name: '/ping', desc: 'Check latency.', active: true },
+                { name: '/points list', desc: 'Points leaderboard.', active: true },
+                { name: '/points increase', desc: 'Add points.', active: true },
+                { name: '/points decrease', desc: 'Remove points.', active: true },
+                { name: '/points reset', desc: 'Reset points.', active: true },
+                { name: '/credits', desc: 'show/transfer credits.', active: true },
+                { name: '/tax', desc: 'calculate credits tax.', active: true },
+              ]
+
+            div.command-list
+                each cmd in commands
+                  div.command-wrapper
+                    div.command-header
+                      div.cmd-info
+                        h4= cmd.name
+                        p= cmd.desc
+                      div.cmd-controls
+                        button.btn-edit-cmd(type="button" onclick="toggleCmdDetails(this)") Edit
+                        label.switch
+                          input.cmd-toggle(type="checkbox" checked=cmd.active data-name=cmd.name) 
+                          span.slider
+                    div.command-details
+                      div.form-group
+                          label Aliases
+                          input.cmd-aliases(type="text" placeholder="alias1, alias2")
+                      div.cmd-grid-config
+                          div
+                              label Enabled Roles
+                              input.cmd-roles-allow(type="text" placeholder="Role IDs")
+                          div
+                              label Disabled Roles
+                              input.cmd-roles-deny(type="text" placeholder="Role IDs")
+                          div
+                              label Enabled Channels
+                              input.cmd-channels-allow(type="text" placeholder="Channel IDs")
+                          div
+                              label Disabled Channels
+                              input.cmd-channels-deny(type="text" placeholder="Channel IDs")
+                      
+                      if ['/mute text', "/mute voice", '/ban', '/warn', '/timeout'].includes(cmd.name)
+                          div.cmd-punish-config
+                              div.form-group
+                                  label ACTION IF TIME ISN'T SPECIFIED
+                                  select.cmd-default-action(onchange="handleActionChange(this)")
+                                      option(value="" disabled selected) Select option...
+                                      option(value="list_reason") Select a reason from the list
+                                      if cmd.name === '/ban'
+                                          option(value="time") Ban for specific time
+                                      if cmd.name === '/mute'
+                                          option(value="time") Mute for specific time
+                                      if cmd.name === '/timeout'
+                                          option(value="time") Timeout for specific time
+
+                              div.form-group.specific-time-container.hidden
+                                  label A SPECIFIED TIME
+                                  div(style="display:flex; gap:8px;")
+                                      input.cmd-spec-time(type="number" placeholder="5")
+                                      select.cmd-spec-unit
+                                          option(value="m") Minutes
+                                          option(value="h") Hours
+                                          option(value="d") Days
+                              
+                              div.form-group.reasons-container.hidden
+                                  label REASONS
+                                  div.reason-add-row
+                                      span Add:
+                                      input.new-reason-text(type="text" placeholder="Reason")
+                                      if cmd.name != "/warn"
+                                          input.new-reason-time(type="number" placeholder="5")
+                                          select.new-reason-unit
+                                              option(value="m") Minutes
+                                              option(value="h") Hours
+                                              option(value="d") Days
+                                      button.btn-icon(style="color:#4ade80" type="button" onclick="addReason(this)")
+                                          svg(width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3")
+                                              line(x1="12" y1="5" x2="12" y2="19")
+                                              line(x1="5" y1="12" x2="19" y2="12")
+                              
+                                  div.reasons-display-list
+
+        div.action-bar
+          div#status-msg.status-msg Ready
+          div.btn-group
+            button.btn-reset#resetBtn(type="button" onclick="resetSettings()") Reset
+            button.btn-primary#saveBtn(type="button" onclick="saveSettings()") Save Changes
+
+    script.
+      if ((performance.getEntriesByType && performance.getEntriesByType("navigation")[0] && performance.getEntriesByType("navigation")[0].type === "reload") || (performance.navigation && performance.navigation.type === 1)) {
+          window.location.href = '/logout';
+      }
+      const GUILD_ID = "#{guildId}"; 
+      const API_URL = `/dashboard/api/${GUILD_ID}`;
+
+      function toggleSidebar() {
+        document.getElementById('sidebar').classList.toggle('closed');
+        document.getElementById('mainContent').classList.toggle('expanded');
+      }
+
+      function switchTab(tabId, navElement) {
+        document.querySelectorAll('.tab-section').forEach(el => el.classList.remove('active'));
+        document.getElementById('tab-' + tabId).classList.add('active');
+        if(navElement) {
+          document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+          navElement.classList.add('active');
+        }
+      }
+
+      function toggleSection(btn, sectionClass, activeClass) {
+        const wrapper = btn.closest('.reply-wrapper');
+        const section = wrapper.querySelector(sectionClass);
+        const isActive = btn.classList.toggle(activeClass);
+        if(isActive) section.classList.add('show'); else section.classList.remove('show');
+      }
+
+      function toggleCmdDetails(btn) {
+        const wrapper = btn.closest('.command-wrapper');
+        const details = wrapper.querySelector('.command-details');
+        details.classList.toggle('open');
+      }
+
+      function handleActionChange(select) {
+        const parent = select.closest('.cmd-punish-config');
+        const timeDiv = parent.querySelector('.specific-time-container');
+        const reasonsDiv = parent.querySelector('.reasons-container');
+        const val = select.value;
+        
+        timeDiv.classList.add('hidden');
+        reasonsDiv.classList.add('hidden');
+
+        if(val.includes('time')) {
+            timeDiv.classList.remove('hidden');
+        } else if (val === 'list_reason') {
+            reasonsDiv.classList.remove('hidden');
+        }
+      }
+
+      function addReason(btn) {
+          const container = btn.closest('.reasons-container');
+          const row = btn.closest('.reason-add-row');
+          const list = container.querySelector('.reasons-display-list');
+          
+          const textInput = row.querySelector('.new-reason-text');
+          const timeInput = row.querySelector('.new-reason-time');
+          const unitInput = row.querySelector('.new-reason-unit');
+
+          const text = textInput ? textInput.value.trim() : "";
+          if (!text) {
+              textInput.style.borderColor = '#ef4444';
+              return;
+          } else {
+              textInput.style.borderColor = '#27272a';
+          }
+
+          let time = "";
+          let unit = "";
+          if (timeInput) {
+              time = timeInput.value.trim();
+              unit = unitInput ? unitInput.value : "";
+              if (!time) {
+                  timeInput.style.borderColor = '#ef4444';
+                  return;
+              } else {
+                  timeInput.style.borderColor = '#27272a';
+              }
+          }
+
+          const item = document.createElement('div');
+          item.className = 'reason-item';
+          item.innerHTML = `
+              <span class="r-text">${text}</span>
+              ${time ? `<span class="r-time">${time}</span>` : '<span class="r-time"></span>'}
+              ${unit ? `<span class="r-unit">${unit}</span>` : '<span class="r-unit"></span>'}
+              <button class="btn-icon btn-delete" type="button" onclick="this.parentElement.remove()" style="width:24px; height:24px;">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <polyline points="3 6 5 6 21 6"></polyline>
+                      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                  </svg>
+              </button>
+          `;
+
+          list.appendChild(item);
+          textInput.value = '';
+          if (timeInput) timeInput.value = '';
+      }
+
+      const colorPicker = document.getElementById('gen_color_picker');
+      const colorText = document.getElementById('gen_color');
+      if(colorPicker && colorText) {
+          colorPicker.addEventListener('input', (e) => colorText.value = e.target.value);
+          colorText.addEventListener('input', (e) => colorPicker.value = e.target.value);
+      }
+
+      document.addEventListener('DOMContentLoaded', async () => {
+        await loadSettings();
+      });
+
+      async function loadSettings() {
+        showStatus('Loading...', 'loading');
+        try {
+          const res = await fetch(API_URL);
+          if (!res.ok) throw new Error('Error');
+          const data = await res.json();
+          
+          if(document.getElementById('gen_prefix')) {
+              document.getElementById('gen_prefix').value = data.prefix || '!';
+              document.getElementById('gen_color').value = data.embedColor || '#000000';
+              document.getElementById('gen_color_picker').value = data.embedColor || '#000000';
+          }
+
+          if(document.getElementById('gen_owners')) {
+              document.getElementById('gen_owners').value = (data.owners || []).join(', ');
+              document.getElementById('gen_blacklist').value = data.blacklistRole || '';
+              document.getElementById('gen_channels').value = (data.allowedChannels || []).join(', ');
+              const tax = data.economy.tax || {};
+              document.getElementById('tax_percentage').value = tax.taxPercengage || 0;
+              document.getElementById('tax_fixed').value = tax.taxFixed || 0;
+              document.getElementById('tax_receiver').value = tax.taxReciever || '';
+              document.getElementById('economy-roles-list').innerHTML = '';
+              if (data.economy.allowedRoles && Array.isArray(data.economy.allowedRoles)) {
+                 data.economy.allowedRoles.forEach(role => addEconomyRoleRow(role));
+              }
+          }
+
+          const autoLine = data.autoLine || {};
+          if(document.getElementById('autoline_enabled')) {
+              document.getElementById('autoline_enabled').checked = !!autoLine.enabled;
+              document.getElementById('autoline_image').value = autoLine.imageUrl || '';
+              document.getElementById('autoline_channels').value = (autoLine.channels || []).join(', ');
+          }
+
+          const autoReply = data.autoReply || {};
+          if(document.getElementById('autoreply_enabled')) {
+              document.getElementById('autoreply_enabled').checked = !!autoReply.enabled;
+              document.getElementById('reply-list').innerHTML = ''; 
+              if (autoReply.replies) autoReply.replies.forEach(r => addReplyRow(r));
+          }
+
+          const autoReact = data.autoReact || {};
+          if(document.getElementById('autoreact_enabled')) {
+              document.getElementById('autoreact_enabled').checked = !!autoReact.enabled;
+              document.getElementById('react-list').innerHTML = ''; 
+              if (autoReact.channels) autoReact.channels.forEach(c => addReactRow(c.channelId, c.emojis.join(', ')));
+          }
+
+          const leveling = data.leveling || {};
+          if(document.getElementById('leveling_enabled')) {
+              document.getElementById('leveling_enabled').checked = !!leveling.enabled;
+              document.getElementById('leveling_channel').value = leveling.channelId || '';
+              document.getElementById('leveling_stats_channel').value = leveling.statsChannelId || '';
+          }
+
+          if(data.commands) {
+             const cmdWrappers = document.querySelectorAll('.command-wrapper');
+             cmdWrappers.forEach(wrapper => {
+                const name = wrapper.querySelector('.cmd-toggle').dataset.name;
+                const cleanName = name.startsWith('/') ? name.split('/')[1] : name;
+                const config = data.commands.find(c => c.name === cleanName);
+                if(config) {
+                    wrapper.querySelector('.cmd-toggle').checked = config.enabled;
+                    wrapper.querySelector('.cmd-aliases').value = (config.aliases || []).join(', ');
+                    wrapper.querySelector('.cmd-roles-allow').value = (config.allowedRoles || []).join(', ');
+                    wrapper.querySelector('.cmd-roles-deny').value = (config.deniedRoles || []).join(', ');
+                    wrapper.querySelector('.cmd-channels-allow').value = (config.allowedChannels || []).join(', ');
+                    wrapper.querySelector('.cmd-channels-deny').value = (config.deniedChannels || []).join(', ');
+                    
+                    const actionSelect = wrapper.querySelector('.cmd-default-action');
+                    if(actionSelect && config.defaultAction) {
+                        actionSelect.value = config.defaultAction;
+                        handleActionChange(actionSelect); 
+                    }
+                    
+                    const specTime = wrapper.querySelector('.cmd-spec-time');
+                    if(specTime && config.specificTime) specTime.value = config.specificTime;
+                    
+                    const specUnit = wrapper.querySelector('.cmd-spec-unit');
+                    if(specUnit && config.specificUnit) specUnit.value = config.specificUnit;
+
+                    if (config.reasons && Array.isArray(config.reasons)) {
+                        const list = wrapper.querySelector('.reasons-display-list');
+                        if (list) {
+                            config.reasons.forEach(r => {
+                                const exists = Array.from(list.querySelectorAll('.r-text')).some(el => el.textContent === r.text);
+
+                                if (exists) return;
+                                const item = document.createElement('div');
+                                item.className = 'reason-item';
+                                item.innerHTML = `
+                                    <span class="r-text">${r.text}</span>
+                                    <span class="r-time">${r.time}</span>
+                                    <span class="r-unit">${r.unit}</span>
+                                    <button class="btn-icon btn-delete" onclick="this.parentElement.remove()" style="width:24px; height:24px;">
+                                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                                    </button>
+                                `;
+                                list.appendChild(item);
+                            });
+                        }
+                    }
+                }
+             });
+          }
+
+          showStatus('Ready', ''); 
+        } catch (error) {
+          console.error(error);
+          showStatus('Error loading', 'error');
+        }
+      }
+
+      function addEconomyRoleRow(data = {}) {
+        const container = document.getElementById('economy-roles-list');
+        const div = document.createElement('div');
+        div.className = 'economy-role-item';
+        const perms = data.permissions || [];
+        div.innerHTML = `
+           <div class="economy-role-grid">
+              <div><label>Role ID</label><input type="text" class="eco-role-id" value="${data.roleId || ''}" placeholder="1234..."></div>
+              <div style="padding-top:20px;"><label class="checkbox-label"><input type="checkbox" class="eco-perm-add" ${perms.includes('addCredits') ? 'checked' : ''}> Add Credits</label></div>
+              <div style="padding-top:20px;"><label class="checkbox-label"><input type="checkbox" class="eco-perm-remove" ${perms.includes('removeCredits') ? 'checked' : ''}> Remove Credits</label></div>
+              <div style="padding-top:14px;"><button class="btn-icon btn-delete" onclick="this.closest('.economy-role-item').remove()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button></div>
+           </div>
+        `;
+        container.appendChild(div);
+      }
+
+      function addReplyRow(data = {}) {
+        const trigger = data.trigger || '';
+        const response = data.response || ''; 
+        const isEmbed = data.isEmbed || false;
+        const embed = data.embed || {};
+        const container = document.getElementById('reply-list');
+        const div = document.createElement('div');
+        div.className = 'reply-wrapper';
+        div.innerHTML = `
+          <div class="reply-main-row">
+            <div><label>Trigger</label><input type="text" class="reply-trigger" value="${trigger}"><div style="display:flex; gap:10px; margin-top:8px;"><label class="checkbox-label"><input type="checkbox" class="reply-wildcard" ${data.wildcard ? 'checked' : ''}> Wildcard</label><label class="checkbox-label"><input type="checkbox" class="reply-touser" ${data.replyToUser !== false ? 'checked' : ''}> Reply User</label></div></div>
+            <div><label>Response</label><textarea class="reply-response">${response}</textarea></div>
+            <div class="reply-actions"><button class="btn-icon btn-toggle ${isEmbed ? 'embed-active' : ''} btn-embed-toggle" onclick="toggleSection(this, '.embed-wrapper', 'embed-active')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg></button><button class="btn-icon btn-toggle ${(data.allowedRoles || data.allowedChannels) ? 'cond-active' : ''}" onclick="toggleSection(this, '.cond-wrapper', 'cond-active')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg></button><button class="btn-icon btn-delete" onclick="this.closest('.reply-wrapper').remove()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button></div>
+          </div>
+          <div class="config-section cond-wrapper ${(data.allowedRoles || data.allowedChannels) ? 'show' : ''}"><div class="grid-2"><input type="text" class="reply-roles-allow" value="${(data.allowedRoles||[]).join(',')}" placeholder="Allow Roles"><input type="text" class="reply-roles-deny" value="${(data.disabledRoles||[]).join(',')}" placeholder="Deny Roles"><input type="text" class="reply-channels-allow" value="${(data.allowedChannels||[]).join(',')}" placeholder="Allow Channels"><input type="text" class="reply-channels-deny" value="${(data.disabledChannels||[]).join(',')}" placeholder="Deny Channels"></div></div>
+          <div class="config-section embed-wrapper ${isEmbed ? 'show' : ''}"><div class="grid-2"><input type="text" class="embed-title" value="${(data.embed||{}).title||''}" placeholder="Title" style="grid-column:span 2"><input type="text" class="embed-color" value="${(data.embed||{}).color||'#ffffff'}" placeholder="Color"><input type="text" class="embed-image" value="${(data.embed||{}).image||''}" placeholder="Image URL"></div></div>
+        `;
+        container.appendChild(div);
+      }
+
+      function addReactRow(channelId = '', emojis = '') {
+        const container = document.getElementById('react-list');
+        const div = document.createElement('div');
+        div.className = 'economy-role-item';
+        div.style.cssText = "display:grid; grid-template-columns:1fr 2fr 40px; gap:10px; align-items:center;";
+        div.innerHTML = `
+          <input type="text" class="react-channel" value="${channelId}" placeholder="Channel ID">
+          <input type="text" class="react-emojis" value="${emojis}" placeholder="🔥, ❤️">
+          <button class="btn-icon btn-delete" onclick="this.parentElement.remove()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
+        `;
+        container.appendChild(div);
+      }
+
+      async function resetSettings() { await loadSettings(); }
+
+      async function saveSettings() {
+        const saveBtn = document.getElementById('saveBtn');
+        saveBtn.disabled = true; saveBtn.innerText = 'Saving...';
+        showStatus('Saving...', 'loading');
+        
+        try {
+          const split = (str) => str.split(',').map(s => s.trim()).filter(s => s);
+          const payload = {
+            prefix: document.getElementById('gen_prefix').value,
+            embedColor: document.getElementById('gen_color').value,
+            owners: split(document.getElementById('gen_owners').value),
+            blacklistRole: document.getElementById('gen_blacklist').value,
+            allowedChannels: split(document.getElementById('gen_channels').value),
+            economy: {
+            tax: {
+                taxPercengage: Number(document.getElementById('tax_percentage').value),
+                taxFixed: Number(document.getElementById('tax_fixed').value),
+                taxReciever: document.getElementById('tax_receiver').value
+            },
+            allowedRoles: Array.from(document.querySelectorAll('.economy-role-item')).map(row => {
+                 if(!row.querySelector('.eco-role-id')) return null;
+                 const perms = [];
+                 if(row.querySelector('.eco-perm-add').checked) perms.push('addCredits');
+                 if(row.querySelector('.eco-perm-remove').checked) perms.push('removeCredits');
+                 return { roleId: row.querySelector('.eco-role-id').value, permissions: perms };
+            }).filter(r => r && r.roleId)
+            },
+            autoLine: {
+               enabled: document.getElementById('autoline_enabled').checked,
+               imageUrl: document.getElementById('autoline_image').value,
+               channels: split(document.getElementById('autoline_channels').value)
+            },
+            autoReply: {
+               enabled: document.getElementById('autoreply_enabled').checked,
+               replies: Array.from(document.querySelectorAll('.reply-wrapper')).map(row => {
+                 const isEmbed = row.querySelector('.btn-embed-toggle').classList.contains('embed-active');
+                 return {
+                   trigger: row.querySelector('.reply-trigger').value,
+                   response: row.querySelector('.reply-response').value,
+                   wildcard: row.querySelector('.reply-wildcard').checked,
+                   replyToUser: row.querySelector('.reply-touser').checked,
+                   isEmbed: isEmbed,
+                   allowedRoles: split(row.querySelector('.reply-roles-allow').value),
+                   disabledRoles: split(row.querySelector('.reply-roles-deny').value),
+                   allowedChannels: split(row.querySelector('.reply-channels-allow').value),
+                   disabledChannels: split(row.querySelector('.reply-channels-deny').value),
+                   embed: isEmbed ? {
+                      title: row.querySelector('.embed-title').value,
+                      color: row.querySelector('.embed-color').value,
+                      image: row.querySelector('.embed-image').value
+                   } : null
+                 };
+               }).filter(r => r.trigger)
+            },
+            autoReact: {
+               enabled: document.getElementById('autoreact_enabled').checked,
+               channels: Array.from(document.querySelectorAll('.react-channel')).map(input => ({
+                  channelId: input.value,
+                  emojis: split(input.nextElementSibling.value)
+               })).filter(r => r.channelId)
+            },
+            leveling: {
+               enabled: document.getElementById('leveling_enabled').checked,
+               channelId: document.getElementById('leveling_channel').value,
+               statsChannelId: document.getElementById('leveling_stats_channel').value
+            },
+            commands: Array.from(document.querySelectorAll('.command-wrapper')).map(wrapper => {
+
+                const defaultActionSelect = wrapper.querySelector('.cmd-default-action');
+                const defaultActionValue = defaultActionSelect ? defaultActionSelect.value : null;
+                const specTime = wrapper.querySelector('.cmd-spec-time');
+                const specUnit = wrapper.querySelector('.cmd-spec-unit');
+                
+                const reasons = [];
+                const reasonItems = wrapper.querySelectorAll('.reason-item');
+                reasonItems.forEach(item => {
+                  const rText = item.querySelector('.r-text').innerText.trim();
+                  const rTimeRaw = item.querySelector('.r-time').innerText.trim();
+                  const rUnitRaw = item.querySelector('.r-unit').innerText.trim();
+                    reasons.push({
+                        text: item.querySelector('.r-text').innerText,
+                        time: rTimeRaw === "" ? null : Number(rTimeRaw),
+                        unit: rUnitRaw === "" ? null : rUnitRaw
+                    });
+                });
+
+                let commandData = {
+                    name: wrapper.querySelector('.cmd-toggle').dataset.name.split("/")[1],
+                    enabled: wrapper.querySelector('.cmd-toggle').checked,
+                    aliases: split(wrapper.querySelector('.cmd-aliases').value),
+                    allowedRoles: split(wrapper.querySelector('.cmd-roles-allow').value),
+                    deniedRoles: split(wrapper.querySelector('.cmd-roles-deny').value),
+                    allowedChannels: split(wrapper.querySelector('.cmd-channels-allow').value),
+                    deniedChannels: split(wrapper.querySelector('.cmd-channels-deny').value),
+                    defaultAction: defaultActionValue,
+                    specificTime: null,
+                    specificUnit: null,
+                    reasons: []
+                };
+
+                if (defaultActionValue && defaultActionValue.includes('time')) {
+                    commandData.specificTime = specTime ? specTime.value : null;
+                    commandData.specificUnit = specUnit ? specUnit.value : null;
+                } else if (defaultActionValue === 'list_reason') {
+                    commandData.reasons = reasons;
+                }
+
+                return commandData;
+            })
+          };
+
+          const res = await fetch(API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+
+          if (!res.ok) throw new Error('Failed');
+          showStatus('Saved successfully', 'success');
+
+        } catch (err) {
+          console.error(err);
+          showStatus('Error saving', 'error');
+        } finally {
+          saveBtn.disabled = false;
+          saveBtn.innerText = 'Save Changes';
+          setTimeout(() => showStatus('Ready', ''), 3000);
+        }
+      }
+
+      function showStatus(msg, type) {
+        const el = document.getElementById('status-msg');
+        el.innerText = msg;
+        el.className = 'status-msg ' + type;
+      }

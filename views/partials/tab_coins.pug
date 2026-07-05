@@ -1,0 +1,46 @@
+div#tab-coins.tab-section
+  h1 Coins Settings
+  p.desc Manage currency permissions, access, and tax rates.
+
+  div.section-card
+    div.section-header
+      div.section-title
+        h3 Coins Access
+        p Control who can manage the currency system.
+    div.form-group
+      label Owners IDs
+      input#gen_owners(type="text" placeholder="ID1, ID2")
+      p.helper-text Users with full access to the economy.
+    div.form-group
+      label Blacklisted Role ID
+      input#gen_blacklist(type="text" placeholder="Role ID")
+      p.helper-text Users with this role cannot use the currency system.
+    div.form-group
+      label Allowed Channels IDs
+      input#gen_channels(type="text" placeholder="Channel ID1, Channel ID2")
+      p.helper-text Channels where currency commands are allowed.
+
+  div.section-card
+      div.section-header
+          div.section-title
+              h3 Tax Configuration
+      div.grid-2
+          div.form-group
+              label Tax Percentage (%)
+              input#tax_percentage(type="number" placeholder="5")
+          div.form-group
+              label Fixed Tax Amount
+              input#tax_fixed(type="number" placeholder="0")
+      div.form-group
+          label Tax Receiver ID
+          input#tax_receiver(type="text" placeholder="User ID")
+          p.helper-text The account that receives collected taxes.
+
+  div.section-card
+      div.section-header
+          div.section-title
+              h3 Allowed Roles
+              p Roles with permission to add/remove credits.
+      div#economy-roles-list.list-container
+      button.btn-add(type="button" onclick="addEconomyRoleRow()") 
+          | + Add Allowed Role

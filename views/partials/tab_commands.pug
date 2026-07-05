@@ -1,0 +1,48 @@
+- 
+  const commands = [
+    { name: '/ban', desc: 'Bans a member.', active: true },
+    { name: '/kick', desc: 'Kicks a member.', active: true },
+    { name: '/mute', desc: 'Mutes a member.', active: true },
+    { name: '/timeout', desc: 'Timeouts a member.', active: true },
+    { name: '/warn', desc: 'Warns a member.', active: true },
+    { name: '/unban', desc: 'Revokes a ban.', active: true },
+    { name: '/unmute', desc: 'Removes mute.', active: true },
+    { name: '/clear', desc: 'Deletes messages.', active: true },
+    { name: '/lock', desc: 'Locks channel.', active: true },
+    { name: '/unlock', desc: 'Unlocks channel.', active: true },
+    { name: '/hide', desc: 'Hides channel.', active: true },
+    { name: '/show', desc: 'Unhides channel.', active: true },
+    { name: '/role', desc: 'Manage roles.', active: true },
+    { name: '/nickname', desc: 'Change nickname.', active: true },
+    { name: '/say', desc: 'Bot repeats message.', active: true },
+    { name: '/embed', desc: 'Send embed.', active: true },
+    { name: '/send', desc: 'Send DM.', active: true },
+    { name: '/come', desc: 'Summon member.', active: true },
+    { name: '/move', desc: 'Move member.', active: true },
+    { name: '/moveme', desc: 'Move self.', active: true },
+    { name: '/profile', desc: 'View profile.', active: true },
+    { name: '/user', desc: 'User info.', active: true },
+    { name: '/avatar', desc: 'User avatar.', active: true },
+    { name: '/server', desc: 'Server info.', active: true },
+    { name: '/ping', desc: 'Check latency.', active: true },
+    { name: '/points list', desc: 'Points leaderboard.', active: true },
+    { name: '/points increase', desc: 'Add points.', active: true },
+    { name: '/points decrease', desc: 'Remove points.', active: true },
+    { name: '/points reset', desc: 'Reset points.', active: true }
+   ]
+
+div#tab-commands.tab-section
+  h1 Slash Commands
+  p.desc Enable or disable specific bot commands.
+
+  div.command-list
+    each cmd in commands
+      div.command-card
+        div.cmd-info
+          h4= cmd.name
+          p= cmd.desc
+        div.cmd-controls
+          button.btn-edit-cmd Edit
+          label.switch
+            input.cmd-toggle(type="checkbox" checked=cmd.active data-name=cmd.name)
+            span.slider

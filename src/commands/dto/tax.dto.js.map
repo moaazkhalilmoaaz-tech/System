@@ -1,0 +1,1 @@
+{"version":3,"file":"tax.dto.js","sourceRoot":"","sources":["../../../../src/commands/dto/tax.dto.ts"],"names":[],"mappings":";;;;;;;;;;;;AAAA,mCAAsC;AAEtC,MAAa,MAAM;IAMjB,MAAM,CAAS;CAChB;AAPD,wBAOC;AADC;IALC,IAAA,qBAAY,EAAC;QACZ,IAAI,EAAE,QAAQ;QACd,WAAW,EAAE,2BAA2B;QACxC,QAAQ,EAAE,IAAI;KACf,CAAC;;sCACa"}
