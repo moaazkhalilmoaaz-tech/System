@@ -119,12 +119,14 @@ let LevelingService = class LevelingService {
         console.log(`[LevelingService] Aesthetics Card: ${user.tag}. Status: ${statusInput}`);
         let templateLoaded = false;
         const possiblePaths = [
-            path.join(process.cwd(), 'src', 'leveling', 'assets', 'Profile1.png'),
+            path.join(process.cwd(), 'leveling', 'assets', 'SDWG.png'),
+            path.join(process.cwd(), 'leveling', 'assets', 'Profile1.png'),
             path.join(process.cwd(), 'src', 'leveling', 'assets', 'SDWG.png'),
-            path.join(process.cwd(), 'dist', 'leveling', 'assets', 'Profile1.png'),
+            path.join(process.cwd(), 'src', 'leveling', 'assets', 'Profile1.png'),
             path.join(process.cwd(), 'dist', 'leveling', 'assets', 'SDWG.png'),
-            path.join(__dirname, 'assets', 'Profile1.png'),
-            path.join(__dirname, 'assets', 'SDWG.png')
+            path.join(process.cwd(), 'dist', 'leveling', 'assets', 'Profile1.png'),
+            path.join(__dirname, 'assets', 'SDWG.png'),
+            path.join(__dirname, 'assets', 'Profile1.png')
         ];
         for (const p of possiblePaths) {
             if (fs.existsSync(p)) {
@@ -568,8 +570,14 @@ let LevelingService = class LevelingService {
     }
     async createLevelUpImage(level, user) {
         const templateName = 'Level-Max.png';
-        const templatePath = path.join(process.cwd(), 'src', 'leveling', 'assets', templateName);
-        if (!fs.existsSync(templatePath)) {
+        const possiblePaths = [
+            path.join(process.cwd(), 'leveling', 'assets', templateName),
+            path.join(process.cwd(), 'src', 'leveling', 'assets', templateName),
+            path.join(process.cwd(), 'dist', 'leveling', 'assets', templateName),
+            path.join(__dirname, 'assets', templateName)
+        ];
+        let templatePath = possiblePaths.find(p => fs.existsSync(p));
+        if (!templatePath) {
             return Buffer.alloc(0);
         }
         const templateBuffer = fs.readFileSync(templatePath);
