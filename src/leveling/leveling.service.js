@@ -57,10 +57,11 @@ const discord_js_1 = require("discord.js");
 const settings_service_1 = require("../api/settings/settings.service");
 const fs = __importStar(require("fs"));
 const path = __importStar(require("path"));
+const ASSETS_DIR = path.join(__dirname, '..', '..', 'leveling', 'assets');
 try {
-    const fontPath = path.join(process.cwd(), 'leveling', 'assets', 'fonts', 'Teko-Bold.ttf');
+    const fontPath = path.join(ASSETS_DIR, 'fonts', 'Teko-Bold.ttf');
     canvas_1.GlobalFonts.registerFromPath(fontPath, 'Teko');
-    console.log('[LevelingService] Font Teko registered successfully.');
+    console.log('[LevelingService] Font Teko registered from:', fontPath);
 }
 catch (error) {
     console.error('[LevelingService] Failed to register Teko font:', error);
@@ -119,14 +120,8 @@ let LevelingService = class LevelingService {
         console.log(`[LevelingService] Aesthetics Card: ${user.tag}. Status: ${statusInput}`);
         let templateLoaded = false;
         const possiblePaths = [
-            path.join(process.cwd(), 'leveling', 'assets', 'SDWG.png'),
-            path.join(process.cwd(), 'leveling', 'assets', 'Profile1.png'),
-            path.join(process.cwd(), 'src', 'leveling', 'assets', 'SDWG.png'),
-            path.join(process.cwd(), 'src', 'leveling', 'assets', 'Profile1.png'),
-            path.join(process.cwd(), 'dist', 'leveling', 'assets', 'SDWG.png'),
-            path.join(process.cwd(), 'dist', 'leveling', 'assets', 'Profile1.png'),
-            path.join(__dirname, 'assets', 'SDWG.png'),
-            path.join(__dirname, 'assets', 'Profile1.png')
+            path.join(ASSETS_DIR, 'SDWG.png'),
+            path.join(ASSETS_DIR, 'Profile1.png'),
         ];
         for (const p of possiblePaths) {
             if (fs.existsSync(p)) {
@@ -286,10 +281,8 @@ let LevelingService = class LevelingService {
         let templateLoaded = false;
         let template;
         const possiblePaths = [
-            path.join(process.cwd(), 'leveling', 'assets', 'rank.png'),
-            path.join(process.cwd(), 'dist', 'leveling', 'assets', 'rank.png'),
-            path.join(__dirname, 'assets', 'rank.png'),
-            path.join(process.cwd(), 'src', 'leveling', 'assets', 'Rank.png')
+            path.join(ASSETS_DIR, 'rank.png'),
+            path.join(ASSETS_DIR, 'Rank.png'),
         ];
         for (const p of possiblePaths) {
             if (fs.existsSync(p)) {
@@ -570,14 +563,9 @@ let LevelingService = class LevelingService {
     }
     async createLevelUpImage(level, user) {
         const templateName = 'Level-Max.png';
-        const possiblePaths = [
-            path.join(process.cwd(), 'leveling', 'assets', templateName),
-            path.join(process.cwd(), 'src', 'leveling', 'assets', templateName),
-            path.join(process.cwd(), 'dist', 'leveling', 'assets', templateName),
-            path.join(__dirname, 'assets', templateName)
-        ];
-        let templatePath = possiblePaths.find(p => fs.existsSync(p));
-        if (!templatePath) {
+        const templatePath = path.join(ASSETS_DIR, templateName);
+        if (!fs.existsSync(templatePath)) {
+            console.error('[LevelingService] Level-Max.png not found at:', templatePath);
             return Buffer.alloc(0);
         }
         const templateBuffer = fs.readFileSync(templatePath);
